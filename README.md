@@ -1,4 +1,7 @@
 
+For docs:
+https://docs.google.com/document/d/1IAcMNf0v2GbIydOp99n4jSCCKgDxYkx9imwO1zo_QnI/edit?usp=sharing
+
 # Welcome to your CDK Python project!
 
 This is a blank project for CDK development with Python.
