@@ -12,11 +12,18 @@ class PyStarterStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         # s3 bucket construct where any file in it expires after 3 days
-        bucket = s3.Bucket(self, "PyBucket", lifecycle_rules=[
+        bucket = s3.Bucket(self, "PyBucket",
+            bucket_name = "mybucket1823919823u891e",
+            lifecycle_rules = [
             s3.LifecycleRule(
                 expiration = Duration.days(3)
             )
         ])
+
+        # # To reproduce the error of 'resource already exists' due to the same physical ID (CDK IDs)
+        # bucket = s3.Bucket(self, "PyBucketUpdated",
+        #     bucket_name = "mybucket1823919823u891e"
+        # )
 
 
         # Prints a placeholder value since 'cdk synth' doesn't deploy to AWS yet
