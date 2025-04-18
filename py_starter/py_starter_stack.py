@@ -16,7 +16,7 @@ class PyStarterStack(Stack):
         suffix = self.__initialize_suffix()
 
         # s3 bucket construct where any file in it expires after 3 days
-        bucket = s3.Bucket(self, "PyBucket",
+        self.bucket = s3.Bucket(self, "PyBucket",
             bucket_name = f"cool-bucket-{suffix}",
             lifecycle_rules = [
             s3.LifecycleRule(
@@ -25,18 +25,18 @@ class PyStarterStack(Stack):
         ])
 
         # # To reproduce the error of 'resource already exists' due to the same physical ID (CDK IDs)
-        # bucket = s3.Bucket(self, "PyBucketUpdated",
+        # self.bucket = s3.Bucket(self, "PyBucketUpdated",
         #     bucket_name = "mybucket1823919823u891e"
         # )
 
 
         # Prints a placeholder value since 'cdk synth' doesn't deploy to AWS yet
-        print("Bucket Name: ", bucket.bucket_name)  # Bucket Name:  ${Token[TOKEN.23]}
+        print("Bucket Name: ", self.bucket.bucket_name)  # Bucket Name:  ${Token[TOKEN.23]}
 
 
         # Outputting the bucket name using cdk
         CfnOutput(self, "PyBucketName",
-                  value=bucket.bucket_name)
+                  value = self.bucket.bucket_name)
 
 
     def __initialize_suffix(self):
@@ -52,3 +52,11 @@ class PyStarterStack(Stack):
         short_stack_id = Fn.select(2, Fn.split('/', self.stack_id))
         suffix = Fn.select(3, Fn.split('-', short_stack_id))
         return suffix
+
+
+    @property # provides a concise way to define getters, setters, and deleter methods
+    def get_bucket(self):
+        """
+        Function to get the bucket in this stack from outside this stack. (Cross-stack references)
+        """
+        return self.bucket
