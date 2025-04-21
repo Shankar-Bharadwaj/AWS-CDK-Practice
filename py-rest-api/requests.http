@@ -1,0 +1,5 @@
+@url = https://lmp6k4fase.execute-api.ap-south-1.amazonaws.com/prod/
+
+# empl is the route at which we have GET and POST methods declared
+GET {{url}}/empl
+###
