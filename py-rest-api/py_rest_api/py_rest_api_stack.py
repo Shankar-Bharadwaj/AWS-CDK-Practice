@@ -1,7 +1,8 @@
 from aws_cdk import (
     Stack,
     aws_apigateway,
-    aws_lambda
+    aws_lambda,
+    aws_dynamodb
 )
 from constructs import Construct
 
@@ -10,14 +11,30 @@ class PyRestApiStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
+        # Creating a table
+        empl_table = aws_dynamodb.TableV2(
+            self,
+            "EmplTablePy",
+            partition_key=aws_dynamodb.Attribute(
+                name="id", type=aws_dynamodb.AttributeType.STRING
+            ),
+            billing=aws_dynamodb.Billing.on_demand()
+        )
+
+
         # Defining the lambda
         empl_lambda = aws_lambda.Function(
             self, 
             "Empl-Lambda",
             runtime=aws_lambda.Runtime.PYTHON_3_11,
             code=aws_lambda.Code.from_asset("services"),
-            handler="index.handler"
+            handler="index.handler",
+            environment={"TABLE_NAME": empl_table.table_name}
         )
+
+
+        # Attach IAM role for our lambda to interact with the dynamoDB table
+        empl_table.grant_read_write_data(empl_lambda)
 
 
         # Defining the API Gateway and the route
