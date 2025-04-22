@@ -3,3 +3,18 @@
 # empl is the route at which we have GET and POST methods declared
 GET {{url}}/empl
 ###
+
+
+# Send POST request to our url
+POST {{url}}/empl
+Content-Type: application/json
+
+{
+    "name": "John",
+    "position": "engineer"
+}
+###
+
+
+GET {{url}}/empl?id=69e2f465-05be-441d-9793-3b2a72df1f5e
+###
