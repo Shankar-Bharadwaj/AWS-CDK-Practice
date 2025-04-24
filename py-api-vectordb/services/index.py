@@ -24,22 +24,26 @@ if not pc.has_index(index_name):
         deletion_protection="disabled"
     )
 
-index = pc.Index(host="pinecone-db")
+index = pc.Index(host="https://pinecone-db-leohdy5.svc.aped-4627-b74a.pinecone.io")
 
 
 def handler(event, context):
-    method=event["httpMethod"]
+    print(json.dumps(event))
+    method = event.get("httpMethod", "")
 
     if method == "POST":
         item = json.loads(event["body"])
         item["id"] = str(uuid.uuid4())
+
+        # Removing 'vector' from metadata
+        metadata = {k: v for k, v in item.items() if k != "vector"}
 
         index.upsert(
             vectors=[
                 {
                     "id": item["id"],
                     "values": item["vector"],
-                    "metadata": item
+                    "metadata": metadata
                 }
             ],
             namespace="example-db"

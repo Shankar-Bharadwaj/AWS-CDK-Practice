@@ -1,7 +1,8 @@
 from aws_cdk import (
     Stack,
     aws_apigateway,
-    aws_lambda
+    aws_lambda,
+    aws_lambda_python_alpha
 )
 from constructs import Construct
 
@@ -25,14 +26,28 @@ class PyApiVectordbStack(Stack):
         # print(secrets) # {'API_KEY': 'pqqi35....'}
 
         # Defining the lambda
-        vector_lambda = aws_lambda.Function(
+        # vector_lambda = aws_lambda.Function(
+        #     self,
+        #     "Vector-DB-Lambda",
+        #     runtime=aws_lambda.Runtime.PYTHON_3_11,
+        #     code=aws_lambda.Code.from_asset("services"),
+        #     handler="index.handler",
+        #     environment={
+        #         "API_KEY": secrets.get("API_KEY", "")
+        #     }
+        # )
+
+
+        # Defining lambda using aws_lambda_python_alpha since we have external dependencies
+        vector_lambda = aws_lambda_python_alpha.PythonFunction(
             self,
             "Vector-DB-Lambda",
+            entry="./services",
             runtime=aws_lambda.Runtime.PYTHON_3_11,
-            code=aws_lambda.Code.from_asset("services"),
-            handler="index.handler",
+            index="index.py",
+            handler="handler",
             environment={
-                "API_KEY": secrets.get("API_KEY", "")
+                "API_KEY": secrets.get("API_KEY","")
             }
         )
 
