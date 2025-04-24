@@ -1,19 +1,47 @@
 from aws_cdk import (
-    # Duration,
     Stack,
-    # aws_sqs as sqs,
+    aws_apigateway,
+    aws_lambda
 )
 from constructs import Construct
+
+
+# Get API_KEY from secrets.txt
+def load_secrets(path):
+    with open(path) as f:
+        return dict(
+            line.strip().split("=", 1) for line in f if "=" in line
+        )
+
 
 class PyApiVectordbStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # The code that defines your stack goes here
+        # Use AWS Secrets Manager for production-grade
+        secrets = load_secrets("secrets.txt")
 
-        # example resource
-        # queue = sqs.Queue(
-        #     self, "PyApiVectordbQueue",
-        #     visibility_timeout=Duration.seconds(300),
-        # )
+        # print(secrets) # {'API_KEY': 'pqqi35....'}
+
+        # Defining the lambda
+        vector_lambda = aws_lambda.Function(
+            self,
+            "Vector-DB-Lambda",
+            runtime=aws_lambda.Runtime.PYTHON_3_11,
+            code=aws_lambda.Code.from_asset("services"),
+            handler="index.handler",
+            environment={
+                "API_KEY": secrets.get("API_KEY", "")
+            }
+        )
+
+
+        # Define API Gateway and the route
+        api = aws_apigateway.RestApi(self, "Py-Vector-api")
+        vector_resource = api.root.add_resource("vector")
+
+
+        # Connecting the Lambda to our API Gateway
+        vector_lambda_integration = aws_apigateway.LambdaIntegration(vector_lambda)
+        vector_resource.add_method("POST", vector_lambda_integration)
