@@ -29,9 +29,10 @@ index = pc.Index(host="https://pinecone-db-leohdy5.svc.aped-4627-b74a.pinecone.i
 
 def handler(event, context):
     # print(json.dumps(event))
+    path = event["resource"]
     method = event["httpMethod"]
 
-    if method == "POST":
+    if path == "/vector" and method == "POST":
         item = json.loads(event["body"])
         item["id"] = str(uuid.uuid4())
 
@@ -54,7 +55,7 @@ def handler(event, context):
             "body": json.dumps({"id": item["id"]}),
         }
     
-    if method == "GET":
+    elif path == "/vector" and method == "GET":
         vector_id = event["queryStringParameters"]["id"]
         response = index.fetch(ids=[vector_id], namespace="example-db")
 
@@ -68,3 +69,27 @@ def handler(event, context):
                 "statusCode": 404,
                 "body": json.dumps({"message": "Not Found"}),
             }
+        
+    elif path == "/query" and method == "POST":
+        body = json.loads(event["body"])
+        query_vector = body["vector"]
+        top_k = body.get("top_k", 1)
+
+        query_result = index.query(
+            namespace="example-db",
+            vector=query_vector,
+            top_k=top_k,
+            include_metadata=True,
+            include_values=False
+        )
+
+        return {
+            "statusCode": 200,
+            "body": json.dumps(query_result.to_dict())
+        }
+
+    else:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"error": "Unsupported route or method"})
+        }
