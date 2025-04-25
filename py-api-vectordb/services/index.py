@@ -28,8 +28,8 @@ index = pc.Index(host="https://pinecone-db-leohdy5.svc.aped-4627-b74a.pinecone.i
 
 
 def handler(event, context):
-    print(json.dumps(event))
-    method = event.get("httpMethod", "")
+    # print(json.dumps(event))
+    method = event["httpMethod"]
 
     if method == "POST":
         item = json.loads(event["body"])
@@ -57,13 +57,14 @@ def handler(event, context):
     if method == "GET":
         vector_id = event["queryStringParameters"]["id"]
         response = index.fetch(ids=[vector_id], namespace="example-db")
-        if "Item" in response:
+
+        if vector_id in response.vectors:
             return {
                 "statusCode": 200,
-                "body": json.dumps(response['Item']),
+                "body": json.dumps(response.vectors[vector_id].to_dict()),
             }
         else:
             return {
                 "statusCode": 404,
-                "body": json.dumps("Not Found"),
+                "body": json.dumps({"message": "Not Found"}),
             }

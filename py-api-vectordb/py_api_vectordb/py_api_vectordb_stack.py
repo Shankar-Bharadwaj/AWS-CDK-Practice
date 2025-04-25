@@ -60,3 +60,4 @@ class PyApiVectordbStack(Stack):
         # Connecting the Lambda to our API Gateway
         vector_lambda_integration = aws_apigateway.LambdaIntegration(vector_lambda)
         vector_resource.add_method("POST", vector_lambda_integration)
+        vector_resource.add_method("GET", vector_lambda_integration)
