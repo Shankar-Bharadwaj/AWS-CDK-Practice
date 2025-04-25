@@ -2,6 +2,7 @@ import json
 from pinecone import Pinecone, ServerlessSpec
 import os
 import uuid
+import time
 
 
 # Initialize a Pinecone client with your API key
@@ -75,6 +76,7 @@ def handler(event, context):
         query_vector = body["vector"]
         top_k = body.get("top_k", 1)
 
+        start_time = time.perf_counter()
         query_result = index.query(
             namespace="example-db",
             vector=query_vector,
@@ -82,10 +84,14 @@ def handler(event, context):
             include_metadata=True,
             include_values=False
         )
+        latency = time.perf_counter() - start_time
 
         return {
             "statusCode": 200,
-            "body": json.dumps(query_result.to_dict())
+            "body": json.dumps({
+                "matches": query_result.to_dict(),
+                "query_latency_ms": round(latency * 1000, 2)
+            })
         }
 
     else:
