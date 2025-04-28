@@ -21,7 +21,7 @@ class PyApiVectordbStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         # Use AWS Secrets Manager for production-grade
-        secrets = load_secrets("secrets.txt")
+        secrets_pinecone = load_secrets("secrets_pinecone.txt")
 
         # print(secrets) # {'API_KEY': 'pqqi35....'}
 
@@ -38,6 +38,7 @@ class PyApiVectordbStack(Stack):
         # )
 
 
+        # Pinecone DB
         # Defining lambda using aws_lambda_python_alpha since we have external dependencies
         vector_lambda = aws_lambda_python_alpha.PythonFunction(
             self,
@@ -47,7 +48,7 @@ class PyApiVectordbStack(Stack):
             index="index.py",
             handler="handler",
             environment={
-                "API_KEY": secrets.get("API_KEY","")
+                "API_KEY": secrets_pinecone.get("API_KEY","")
             }
         )
 
@@ -63,3 +64,27 @@ class PyApiVectordbStack(Stack):
         vector_resource.add_method("POST", vector_lambda_integration)
         vector_resource.add_method("GET", vector_lambda_integration)
         query_resource.add_method("POST", vector_lambda_integration)
+
+
+        # Qdrant DB
+        secrets_qdrant = load_secrets("secrets_qdrant.txt")
+
+        # Defining lambda using aws_lambda_python_alpha since we have external dependencies
+        qdrant_lambda = aws_lambda_python_alpha.PythonFunction(
+            self,
+            "Qdrant-DB-Lambda",
+            entry="./qdrant-services",
+            runtime=aws_lambda.Runtime.PYTHON_3_11,
+            index="index.py",
+            handler="handler",
+            environment={
+                "API_KEY": secrets_qdrant.get("API_KEY","")
+            }
+        )
+
+        qdrant_resource = api.root.add_resource("qdrant")
+        qdrant_similarity_resource = api.root.add_resource("query_qdrant")
+
+        qdrant_lambda_integration = aws_apigateway.LambdaIntegration(qdrant_lambda)
+        qdrant_resource.add_method("POST", qdrant_lambda_integration)
+        qdrant_similarity_resource.add_method("POST", qdrant_lambda_integration)

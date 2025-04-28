@@ -5,6 +5,8 @@ import uuid
 import time
 
 
+# ************************************* PINECONE DB *************************************************
+
 # Initialize a Pinecone client with your API key
 api_key = os.environ.get("API_KEY")
 pc = Pinecone(api_key=api_key)
