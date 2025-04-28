@@ -4,7 +4,8 @@ __pycache__
 .pytest_cache
 .venv
 *.egg-info
-secrets.txt
+secrets_pinecone.txt
+secrets_qdrant.txt
 
 # CDK asset staging directory
 .cdk.staging
